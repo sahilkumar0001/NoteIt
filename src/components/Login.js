@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+
+import { Link,useNavigate } from "react-router-dom";
 function Login() {
   const navigate = useNavigate();
   const [user, setUser] = useState({ email: "", password: "" });
+  const [error, seterror] = useState(false)
   const onchange = (e) => {
     setUser({ ...user, [e.target.name]: e.target.value });
   };
@@ -17,16 +19,24 @@ function Login() {
       body: JSON.stringify({ email, password })
     });
     
-    if (await response.status === 200) {
+    if ( response.status === 200) {
+      localStorage.setItem("auth","true");
       navigate("/")
     }
     else{
-      alert("Enter valid credentials!")
+      seterror(true);
     }
   };
   return (
-    <>
-      <h2 className="text-center p-5">Login</h2>
+    <div className="container">
+      <div class={`alert alert-danger alert-dismissible fade show align-left ${(error)?"":"d-none"}`} role="alert" style={{    width: "40%",
+    position: "absolute",
+    top: "55px",
+    left: "0"}}>
+  <strong>Enter valid credentials!</strong>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+      <h2 className="text-center">Login</h2>
       <div
         className="login container  m-auto w-70 p-5"
         style={{ width: "55%", minWidth: "500px" }}
@@ -66,7 +76,9 @@ function Login() {
           </button>
         
       </div>
-    </>
+      <h5 className="text-center">Don't have an account?<Link to="/register" className="link-success" >Register</Link></h5>
+     
+    </div>
   );
 }
 
