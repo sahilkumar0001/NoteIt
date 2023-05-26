@@ -6,11 +6,15 @@ const Note = require('../modals/Notes');
 router.post('/addnote' , (req,res)=>{
     console.log('api hit...')
     try {
+        if (req.body.title===""||req.body.description==="") {
+            res.status(400).send("enter title and description")
+        } else {
         const note = Note(req.body);
         note.save();
         res.send(note);
+        }
     } catch (error) {
-        res.status(400).send('Error')
+        res.status(500).send('Error')
     }
 
 })

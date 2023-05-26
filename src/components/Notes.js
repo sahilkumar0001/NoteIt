@@ -1,20 +1,22 @@
-import React, { useState, useEffect  } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Note from "./note";
-import Navbar from "./Navbar";
-
+import { useNavigate } from "react-router-dom";
 function Notes() {
   //states
-  // const ref = useRef();
+  const ref = useRef();
+  const navigate = useNavigate();
+  const refClose = useRef();
   const [data, setData] = useState([]);
   const [note, setNote] = useState({ title: "", description: "" });
-  // const [enote, seteNote] = useState({ etitle: "", edescription: "" });
-  // const [unote, setuNote] = useState({ title: "", description: "" ,id:""});
+  const [enote, seteNote] = useState({ title: "", description: "" ,id:""});
+
   //FETCHING ALL NOTES
   async function FetchNotes() {
     const url = "http://127.0.0.1:5000/api/notes/allnotes";
     const response = await fetch(url);
     const parsedData = await response.json();
-    setData(parsedData);
+    const notes = parsedData.filter((note)=>{return note.user === localStorage.getItem("auth")})
+    setData(notes);
   }
 
   //CALLING FetchNotes ON FIRST RELOAD
@@ -26,14 +28,21 @@ function Notes() {
   const AddNote = async () => {
     const { title, description } = note;
     const url = "http://127.0.0.1:5000/api/notes/addnote";
+    
     const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-type": "application/json",
       },
-      body: JSON.stringify({ title, description }),
+      body: JSON.stringify({ title, description,user:localStorage.getItem("auth") }),
     });
-    setData(data.concat(await response.json()));
+    if(title===""||description===""){
+      alert("Enter title and descritpion!")
+    }
+    else{
+      setData(data.concat(await response.json()));
+      setNote({ title: "", description: "" });
+    }
   };
   const onchange = (e) => {
     setNote({ ...note, [e.target.name]: e.target.value });
@@ -54,47 +63,55 @@ function Notes() {
     });
     setData(newNotes);
   };
+
   // UPDATE AN EXISTING NOTE
-  // const UpdateNote = async (id) => {
-  //   let { etitle, edescription } = enote;
-  //   const title=etitle;
-  //   const description=edescription;
-  //   // API END
-  //   const url = `http://127.0.0.1:5000/api/notes/editnote/${id}`;
-  //   // eslint-disable-next-line
-  //   const response = await fetch(url, {
-  //     method: "PUT",
-  //     headers: {
-  //       "Content-type": "application/json",
-  //     },
-      
-  //     body: JSON.stringify({title,description}),
-  //   });
-  //   // UI END
+
+  const UpdateNote = async (id) => {
+    const { title, description } = enote;
     
-  // };
-  // const onchangeUpdate=(e)=>{
-  //   e.preventDefault();
-  //   seteNote({...enote,[e.target.name]:e.target.value})
-  // }
-  // const callUpdate = (id)=>{
-  //   ref.current.click();
-  //   for (let index = 0; index < data.length; index++) {
-  //     if(data[index]._id === id){
-  //       const note = data[index];
-  //       setuNote({title:note.title,description:note.description,id:note._id})
-  //     }
-  //     else{
-  //       continue;
-  //     }
-      
-  //   }
-  // }
+    // API END
+    const url = `http://127.0.0.1:5000/api/notes/editnote/${id}`;
+    // eslint-disable-next-line
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-type": "application/json",
+      },
+
+      body: JSON.stringify({title,description}),
+    });
+    // UI END
+    for (let index = 0; index < data.length; index++) {
+      if (data[index]._id === id) {
+        data[index].title=title;
+        data[index].description=description;
+        break;
+      }
+    }
+    
+    navigate('/')
+    refClose.current.click();
+  };
+  const onchangeUpdate=(e)=>{
+    seteNote({ ...enote ,[e.target.name]:e.target.value})
+  }
+  const callUpdate = (id)=>{
+    ref.current.click();
+    for (let index = 0; index < data.length; index++) {
+      if(data[index]._id === id){
+        const note = data[index];
+        seteNote({title:note.title,description:note.description,id:note._id})
+      }
+      else{
+        continue;
+      }
+
+    }
+  }
   return (
     <div>
-      <Navbar/>
       {/* // FORM FOR ADDING A NEW NOTE */}
-      
+
       <div className="container my-4">
         <h2>Add Note</h2>
         <div className="mb-3">
@@ -107,6 +124,7 @@ function Notes() {
             id="title"
             name="title"
             onChange={onchange}
+            value={note.title}
           />
         </div>
         <div className="mb-3">
@@ -119,6 +137,7 @@ function Notes() {
             name="description"
             rows="3"
             onChange={onchange}
+            value={note.description}
           ></textarea>
         </div>
         <button type="submit" className="btn btn-primary" onClick={AddNote}>
@@ -127,7 +146,7 @@ function Notes() {
       </div>
 
       {/* MODAL TO UPDATE A NOTE  */}
-      {/* <button
+      <button
         type="button"
         className="btn btn-primary d-none"
         ref={ref}
@@ -155,6 +174,7 @@ function Notes() {
                 className="btn-close"
                 data-bs-dismiss="modal"
                 aria-label="Close"
+                ref={refClose}
               ></button>
             </div>
             <div className="modal-body">
@@ -166,9 +186,9 @@ function Notes() {
                   type="text"
                   className="form-control"
                   id="etitle"
-                  name="etitle"
+                  name="title"
+                  value={enote.title}
                   onChange={onchangeUpdate}
-                  value={unote.title}
                 />
               </div>
               <div className="mb-3">
@@ -178,21 +198,21 @@ function Notes() {
                 <textarea
                   className="form-control"
                   id="edescription"
-                  name="edescription"
+                  name="description"
                   rows="3"
+                  value={enote.description}
                   onChange={onchangeUpdate}
-                  value={unote.description}
                 ></textarea>
               </div>
             </div>
             <div className="modal-footer">
-              <button type="button" className="btn btn-primary" onClick={()=>{UpdateNote(unote.id)}}>
+              <button type="button" className="btn btn-primary" onClick={()=>{UpdateNote(enote.id)}}>
                 Update Note
               </button>
             </div>
           </div>
         </div>
-      </div> */}
+      </div> 
 
 
       {/* // SECTION WHERE ALL NOTES WILL APPEAR */}
@@ -207,9 +227,9 @@ function Notes() {
             delete={() => {
               DeleteNote(note._id);
             }}
-            // update={() => {
-            //   callUpdate(note._id);
-            // }}
+          update={() => {
+            callUpdate(note._id);
+          }}
           />
         ))}
       </div>

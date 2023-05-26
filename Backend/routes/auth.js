@@ -2,14 +2,20 @@ const express = require("express");
 const router = express.Router();
 const User = require("../modals/User");
 
-router.post("/createuser", (req, res) => {
+router.post("/createuser", async(req, res) => {
   console.log("api hit..");
   try {
-    const user = User(req.body);
-    user.save();
-    res.send(user);
+    const email=await User.findOne({email:req.body.email})
+    if(!email){
+      const user = User(req.body);
+      user.save();
+      res.send(user);
+    }
+    else{
+      res.status(401).send("User already exists!")
+    }
   } catch (error) {
-    res.status(400).send("Error");
+    res.status(500).send("Error");
   }
 });
 
@@ -22,11 +28,13 @@ router.post("/login", async(req, res) => {
     if (!user) {
       return res.status(401).send("Enter valid credentials!");
     }
+    // localStorage.setItem({auth:"yess"});
     res.send(user);
   } catch (error) {
     res.status(400).send("Error");
   }
   console.log("api hit..");
+  
 });
 
 module.exports = router;

@@ -1,30 +1,30 @@
 import React, { useState } from "react";
 
-import { Link,useNavigate } from "react-router-dom";
+import {Link, useNavigate } from "react-router-dom";
 function Login() {
   const navigate = useNavigate();
-  const [user, setUser] = useState({ email: "", password: "" });
   const [error, seterror] = useState(false)
+  const [user, setUser] = useState({username:"", email: "", password: "" });
   const onchange = (e) => {
     setUser({ ...user, [e.target.name]: e.target.value });
   };
-  const login = async () => {
-    const { email, password } = user;
-    const url = "http://localhost:5000/api/auth/login";
+  const register = async () => {
+    const {username, email, password } = user;
+    const url = "http://localhost:5000/api/auth/createuser";
     const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-type": "application/json",
       },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({username, email, password })
     });
     if ( response.status === 200) {
-      const id =  await response.json();
+      const id = await response.json();
       localStorage.setItem("auth",id._id);
       navigate("/")
     }
     else{
-      seterror(true);
+      seterror(true)
     }
   };
   return (
@@ -33,15 +33,28 @@ function Login() {
     position: "absolute",
     top: "55px",
     left: "0"}}>
-  <strong>Enter valid credentials!</strong>
+  <strong>User Already Exists, Try logging in!</strong>
   <button type="button" className="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>
-      <h2 className="text-center">Login</h2>
+      <h2 className="text-center">Register</h2>
       <div
         className="login container  m-auto w-70 p-5"
-        style={{ width: "55%", minWidth: "500px" }}
+        style={{ width: "60%", maxWidth: "500px" }}
       >
-       
+       <div className="mb-3">
+            <label htmlFor="email" className="form-label">
+              UserName
+            </label>
+            <input
+              type="username"
+              className="form-control"
+              id="username"
+              aria-describedby="emailHelp"
+              name="username"
+              onChange={onchange}
+            />
+            
+          </div>
           <div className="mb-3">
             <label htmlFor="email" className="form-label">
               Email address
@@ -71,13 +84,12 @@ function Login() {
             />
           </div>
 
-          <button type="submit" className="btn btn-primary" onClick={login}>
+          <button type="submit" className="btn btn-primary m-auto" onClick={register}>
             Submit
           </button>
         
       </div>
-      <h5 className="text-center">Don't have an account?<Link to="/register" className="link-success" >Register</Link></h5>
-     
+      <h5 className="text-center">Already have an account?<Link to="/login" className="link-success" >Login</Link></h5>
     </div>
   );
 }
