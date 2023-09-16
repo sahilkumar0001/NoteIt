@@ -77,7 +77,9 @@ function Login() {
         
       </div>
       <h5 className="text-center">Don't have an account?<Link to="/register" className="link-success" >Register</Link></h5>
-     
+      <div id="emailHelp" className="form-text text-center pt-3">
+             Demo account: email=demo@gmail.com, password=demo
+            </div>
     </div>
   );
 }
