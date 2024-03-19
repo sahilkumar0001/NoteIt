@@ -39,7 +39,7 @@ function Login() {
       <h2 className="text-center">Register</h2>
       <div
         className="login container  m-auto w-70 p-5"
-        style={{ width: "60%", maxWidth: "500px" }}
+        style={{ width: "60%", minWidth: "400px" }}
       >
        <div className="mb-3">
             <label htmlFor="email" className="form-label">
